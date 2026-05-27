@@ -1,3 +1,7 @@
+using HospitalAPI.Data;
+using HospitalAPI.Services;
+using Microsoft.EntityFrameworkCore;
+
 namespace HospitalAPI;
 
 public class Program
@@ -11,6 +15,9 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+        builder.Services.AddScoped<IDbService, DbService>();
+        builder.Services.AddDbContext<HospitalDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DeafultConnection")));
 
         var app = builder.Build();
 
