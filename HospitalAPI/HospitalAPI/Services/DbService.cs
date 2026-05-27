@@ -1,5 +1,7 @@
 ﻿using HospitalAPI.Data;
 using HospitalAPI.DTOs;
+using HospitalAPI.Exceptions;
+using HospitalAPI.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace HospitalAPI.Services;
@@ -69,5 +71,32 @@ public class DbService : IDbService
             }).ToList()
         }).ToListAsync();
         return result;
+    }
+
+    public async Task CreateBedAssignmentAsync(string pesel, CreateBedAssignmentDto dto)
+    {
+        var patientCheck = await _dbContext.Patients.AnyAsync(p=> p.Pesel== pesel);
+        if (!patientCheck)
+        {
+            throw new NotFoundException("Nie znaleziono pacjenta!");
+        }
+        
+        var bedCheck = await _dbContext.Beds.Where(b=> b.BedType.Name == dto.BedType && b.Room.Ward.Name == dto.Ward)
+            .Where(b=> !b.BedAssignments.Any(ba =>(dto.To == null || ba.From < dto.To) &&(ba.To == null || ba.To > dto.From))).FirstOrDefaultAsync();
+
+        if (bedCheck == null)
+        {
+            throw new NotFoundException("Nie ma takiego wolnego łóżka!");
+        }
+
+        var bedAssignment = new BedAssignment()
+        {
+            PatientPesel = pesel,
+            BedId = bedCheck.Id,
+            From = dto.From,
+            To = dto.To,
+        };
+        await _dbContext.BedAssignments.AddAsync(bedAssignment);
+        await _dbContext.SaveChangesAsync();
     }
 }

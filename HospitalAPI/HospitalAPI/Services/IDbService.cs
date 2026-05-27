@@ -5,4 +5,5 @@ namespace HospitalAPI.Services;
 public interface IDbService
 {
     Task<IEnumerable<GetPatientDto>> GetPatientsWithSearchAsync(string? search);
+    Task CreateBedAssignmentAsync(string pesel, CreateBedAssignmentDto dto);
 }

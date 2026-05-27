@@ -1,3 +1,5 @@
+using HospitalAPI.DTOs;
+using HospitalAPI.Exceptions;
 using HospitalAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,6 +21,21 @@ namespace HospitalAPI.Controllers
         {
             var result = await _dbService.GetPatientsWithSearchAsync(search);
             return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("{pesel}/bedassignments")]
+        public async Task<IActionResult> CreateBedAssignment(string pesel, [FromBody] CreateBedAssignmentDto dto)
+        {
+            try
+            {
+                await _dbService.CreateBedAssignmentAsync(pesel, dto);
+                return Created();
+            }
+            catch(NotFoundException e )
+            {
+                return NotFound(e.Message);
+            }
         }
     }
 }
